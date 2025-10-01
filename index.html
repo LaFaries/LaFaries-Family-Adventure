@@ -1,0 +1,446 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>LaFaries Family Adventures – Speak Edition</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <style>
+    :root{
+      /* Colors with black as primary background */
+      --gold:#ffd700;       /* bright gold */
+      --amber:#ffae42;      /* warm amber orange */
+      --spice:#ff6a00;      /* strong orange */
+      --rust:#5b2410;
+      --cocoa:#f4f4f4;      /* light text so it shows on black */
+      --cream:#fcf4e6;
+      --muted:#bdbdbd;
+      --accent:#2ee6a1;
+      --danger:#ff4d4d;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      font-family: "Comic Sans MS", cursive, system-ui, -apple-system, Segoe UI, Roboto, Arial, "Apple Color Emoji", "Segoe UI Emoji";
+      text-align: center;
+      padding: 40px 24px 56px;
+      color: var(--cocoa);
+      background: #000000; /* Solid black */
+    }
+
+    /* Big, glowing background title */
+    .bg-heading {
+      position: fixed;
+      inset: 0 auto auto 0;
+      width: 100%;
+      text-align: center;
+      font-weight: 900;
+      letter-spacing: .06em;
+      line-height: 1.05;
+      pointer-events: none;
+      user-select: none;
+      white-space: nowrap;
+      z-index: 0;
+      opacity: 0.25;
+      padding-top: 6vh;
+      font-size: clamp(48px, 10vw, 160px);
+      background: linear-gradient(90deg, var(--gold), var(--amber), var(--spice));
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+      filter: drop-shadow(0 0 8px rgba(255,180,60,0.7));
+    }
+
+    /* Foreground content */
+    .page {
+      position: relative;
+      z-index: 2;
+      max-width: 1100px;
+      margin: 0 auto;
+    }
+
+    h1 {
+      color: var(--amber);
+      font-size: clamp(28px, 5vw, 48px);
+      margin: 12px 0 10px;
+      text-shadow: 0 2px 0 rgba(0,0,0,0.8);
+    }
+
+    .tagline {
+      margin-top: 0;
+      margin-bottom: 18px;
+      font-style: italic;
+      color: #f0e0c0;
+      opacity: .9;
+    }
+
+    /* Controls */
+    .controls {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 10px;
+      margin: 18px auto 24px;
+    }
+
+    .btn {
+      background: #111;
+      border: 2px solid var(--gold);
+      color: var(--cocoa);
+      padding: 10px 14px;
+      border-radius: 999px;
+      cursor: pointer;
+      font-weight: 700;
+      transition: transform .08s ease, box-shadow .12s ease, background .12s ease, color .12s ease;
+      box-shadow: 0 6px 14px rgba(0,0,0,0.35);
+      user-select: none;
+    }
+    .btn:hover { transform: translateY(-1px); }
+    .btn:active { transform: translateY(0); }
+    .btn.secondary { border-color: var(--muted); color: var(--muted); }
+    .btn.accent { border-color: var(--accent); color: var(--accent); }
+    .btn.danger { border-color: var(--danger); color: var(--danger); }
+    .btn[disabled] { opacity: .6; cursor: not-allowed; }
+
+    .now-playing {
+      margin: 6px 0 0;
+      font-weight: 700;
+      color: var(--gold);
+      min-height: 1.5em;
+    }
+
+    .family-grid {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 20px;
+    }
+
+    .character {
+      width: 150px;
+      cursor: pointer;
+      transition: transform .12s ease, filter .12s ease;
+    }
+    .character:hover { transform: translateY(-3px); filter: saturate(1.1); }
+
+    .character img {
+      width: 100%;
+      border-radius: 14px;
+      border: 3px solid var(--spice);
+      box-shadow: 0 8px 18px rgba(0,0,0,0.4);
+      display:block;
+    }
+
+    .name {
+      margin-top: 10px;
+      font-weight: bold;
+      color: var(--cream);
+      text-shadow: 0 1px 0 rgba(0,0,0,.9);
+    }
+
+    /* Highlight currently speaking card */
+    .speaking .name { color: var(--accent); }
+    .speaking img { box-shadow: 0 0 0 3px var(--accent), 0 10px 22px rgba(46,230,161,0.35); }
+
+    /* Bottom background collage of characters, faded into the bottom */
+    .bg-characters {
+      position: fixed;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      height: clamp(180px, 28vh, 320px);
+      display: flex;
+      align-items: flex-end;
+      justify-content: center;
+      gap: clamp(8px, 2vw, 24px);
+      padding: 0 clamp(8px, 2vw, 24px) 0;
+      z-index: 1;
+      pointer-events: none;
+      opacity: 0.25;
+    }
+
+    .bg-characters img {
+      height: 100%;
+      width: auto;
+      object-fit: contain;
+      filter: saturate(1.1) contrast(0.95);
+      -webkit-mask-image: linear-gradient(to bottom, black 40%, rgba(0,0,0,0) 100%);
+              mask-image: linear-gradient(to bottom, black 40%, rgba(0,0,0,0) 100%);
+    }
+
+    .bottom-spacer { height: clamp(40px, 10vh, 120px); }
+  </style>
+</head>
+<body>
+  <!-- Soft glowing background title -->
+  <div class="bg-heading">LaFaries Family Adventures</div>
+
+  <!-- Bottom faded character collage (background) -->
+  <div class="bg-characters" aria-hidden="true">
+    <img src="https://imgur.com/AT2lUr7.png" alt="">
+    <img src="https://imgur.com/lgOH3Zj.png" alt="">
+    <img src="https://imgur.com/wBuUBp3.png" alt="">
+    <img src="https://imgur.com/iclnswa.png" alt="">
+    <img src="https://imgur.com/FrVjzsn.png" alt="">
+    <img src="https://imgur.com/GZXr4jg.png" alt="">
+    <img src="https://imgur.com/RSD5FnP.png" alt="">
+    <img src="https://imgur.com/YLDH4Uz.png" alt="">
+    <img src="https://imgur.com/jj0cQKT.png" alt="">
+    <img src="https://imgur.com/rXiFPGb.png" alt="">
+  </div>
+
+  <div class="page">
+    <h1>🗣️ LaFaries Family Speaks</h1>
+    <div class="tagline">Tap a family member to hear their voice • or use the controls to play everyone</div>
+
+    <!-- Playback Controls -->
+    <div class="controls" role="group" aria-label="Playback controls">
+      <button id="playAllBtn" class="btn">▶️ Play All</button>
+      <button id="shuffleBtn" class="btn accent">🔀 Shuffle & Play</button>
+      <button id="replayBtn" class="btn secondary" disabled>⟲ Replay Current</button>
+      <button id="stopBtn" class="btn danger" disabled>⏹ Stop</button>
+    </div>
+    <div id="nowPlaying" class="now-playing" aria-live="polite"></div>
+
+    <div class="family-grid" id="familyGrid">
+      <div class="character" data-audio="aaron-voice" data-name="Aaron">
+        <img src="https://imgur.com/AT2lUr7.png" alt="Aaron" />
+        <div class="name">Aaron</div>
+        <audio id="aaron-voice" src="voices/Aaron%20Voice.mp3" preload="auto"></audio>
+      </div>
+
+      <div class="character" data-audio="sarai-voice" data-name="Sarai">
+        <img src="https://imgur.com/lgOH3Zj.png" alt="Sarai" />
+        <div class="name">Sarai</div>
+        <audio id="sarai-voice" src="voices/Aaron%20Voice%202.mp3" preload="auto"></audio>
+      </div>
+
+      <div class="character" data-audio="aunti-krystal-voice" data-name="Aunti Krystal">
+        <img src="https://imgur.com/wBuUBp3.png" alt="Aunti Krystal" />
+        <div class="name">Aunti Krystal</div>
+        <audio id="aunti-krystal-voice" src="voices/Aunti%20Krystal%20Voice.mp3" preload="auto"></audio>
+      </div>
+
+      <div class="character" data-audio="darian-voice" data-name="Darian">
+        <img src="https://imgur.com/iclnswa.png" alt="Darian" />
+        <div class="name">Darian</div>
+        <audio id="darian-voice" src="voices/Darian%20Voice.mp3" preload="auto"></audio>
+      </div>
+
+      <div class="character" data-audio="granddad-david-voice" data-name="Granddad David">
+        <img src="https://imgur.com/FrVjzsn.png" alt="Granddad David" />
+        <div class="name">Granddad David</div>
+        <audio id="granddad-david-voice" src="voices/Grand%20dad%20David%20Voice.mp3" preload="auto"></audio>
+      </div>
+
+      <div class="character" data-audio="grandma-lafaries-voice" data-name="Grandma LaFaries">
+        <img src="https://imgur.com/GZXr4jg.png" alt="Grandma LaFaries" />
+        <div class="name">Grandma LaFaries</div>
+        <audio id="grandma-lafaries-voice" src="voices/ElevenLabs_2025-07-25T22_27_49_LaFaries%20Clone_ivc_sp96_s50_sb75_se0_b_m2.mp3" preload="auto"></audio>
+      </div>
+
+      <div class="character" data-audio="jae-voice" data-name="Jae">
+        <img src="https://imgur.com/RSD5FnP.png" alt="Jae" />
+        <div class="name">Jae</div>
+        <audio id="jae-voice" src="voices/Jae%20Voice.mp3" preload="auto"></audio>
+      </div>
+
+      <div class="character" data-audio="uncle-mike-voice" data-name="Uncle Mike">
+        <img src="https://imgur.com/YLDH4Uz.png" alt="Uncle Mike" />
+        <div class="name">Uncle Mike</div>
+        <audio id="uncle-mike-voice" src="voices/Uncle%20Mike%20voice.mp3" preload="auto"></audio>
+      </div>
+
+      <div class="character" data-audio="thad-voice" data-name="Thad">
+        <img src="https://imgur.com/jj0cQKT.png" alt="Thad" />
+        <div class="name">Thad</div>
+        <audio id="thad-voice" src="voices/Thad%20Voice.mp3" preload="auto"></audio>
+      </div>
+
+      <div class="character" data-audio="zara-voice" data-name="Zara">
+        <img src="https://imgur.com/rXiFPGb.png" alt="Zara" />
+        <div class="name">Zara</div>
+        <audio id="zara-voice" src="voices/Zara%20%20script%20Audio.mp3" preload="auto"></audio>
+      </div>
+    </div>
+
+    <div class="bottom-spacer"></div>
+  </div>
+
+  <script>
+    // Utility: get list of characters in DOM order
+    function getCharacters() {
+      return Array.from(document.querySelectorAll('.character')).map(card => ({
+        card,
+        id: card.dataset.audio,
+        name: card.dataset.name,
+        audio: document.getElementById(card.dataset.audio)
+      }));
+    }
+
+    // Shuffle helper
+    function shuffle(array) {
+      for (let i = array.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [array[i], array[j]] = [array[j], array[i]];
+      }
+      return array;
+    }
+
+    // Visual highlight for "speaking"
+    function setSpeaking(card, on) {
+      card.classList.toggle('speaking', !!on);
+    }
+
+    // Stop everything
+    function stopAll() {
+      getCharacters().forEach(({audio, card}) => {
+        if (!audio.paused) audio.pause();
+        audio.currentTime = 0;
+        setSpeaking(card, false);
+      });
+    }
+
+    // Click-to-play (single)
+    document.getElementById('familyGrid').addEventListener('click', (e) => {
+      const card = e.target.closest('.character');
+      if (!card) return;
+      const id = card.dataset.audio;
+      const { audio } = getCharacters().find(c => c.id === id) || {};
+      if (!audio) return;
+
+      // Pause others
+      stopAll();
+      // Play this one
+      setSpeaking(card, true);
+      audio.play().catch(()=>{});
+      updateNowPlaying(card.dataset.name);
+      currentAudio = audio;
+      currentCard = card;
+      enableControlsDuringPlay();
+      audio.onended = () => { setSpeaking(card, false); updateNowPlaying(''); disableControlsIfIdle(); };
+    });
+
+    // Sequential playback state
+    let playingSequence = false;
+    let queue = [];
+    let currentIndex = -1;
+    let currentAudio = null;
+    let currentCard = null;
+
+    const playAllBtn = document.getElementById('playAllBtn');
+    const shuffleBtn = document.getElementById('shuffleBtn');
+    const stopBtn = document.getElementById('stopBtn');
+    const replayBtn = document.getElementById('replayBtn');
+    const nowPlaying = document.getElementById('nowPlaying');
+
+    function updateNowPlaying(text) {
+      nowPlaying.textContent = text ? `Now Playing: ${text}` : '';
+    }
+
+    function enableControlsDuringPlay() {
+      stopBtn.disabled = false;
+      replayBtn.disabled = !currentAudio;
+    }
+    function disableControlsIfIdle() {
+      const anyPlaying = getCharacters().some(({audio}) => !audio.paused);
+      if (!anyPlaying && !playingSequence) {
+        stopBtn.disabled = true;
+        replayBtn.disabled = true;
+      }
+    }
+
+    async function playItem(idx) {
+      const item = queue[idx];
+      if (!item) return false;
+      // Stop others
+      stopAll();
+
+      currentIndex = idx;
+      currentAudio = item.audio;
+      currentCard = item.card;
+
+      setSpeaking(item.card, true);
+      updateNowPlaying(item.name);
+      enableControlsDuringPlay();
+
+      try {
+        await item.audio.play();
+      } catch (e) {
+        // Autoplay error or missing file: skip to next
+        setSpeaking(item.card, false);
+        return true; // continue loop
+      }
+
+      return new Promise(resolve => {
+        item.audio.onended = () => {
+          setSpeaking(item.card, false);
+          resolve(true);
+        };
+        item.audio.onerror = () => {
+          setSpeaking(item.card, false);
+          resolve(true);
+        };
+      });
+    }
+
+    async function playSequence(shuffled=false) {
+      if (playingSequence) return;
+      playingSequence = true;
+
+      queue = getCharacters();
+      if (shuffled) queue = shuffle(queue);
+
+      playAllBtn.disabled = true;
+      shuffleBtn.disabled = true;
+      stopBtn.disabled = false;
+      replayBtn.disabled = true;
+
+      for (let i = 0; i < queue.length; i++) {
+        const cont = await playItem(i);
+        if (!cont || !playingSequence) break;
+      }
+
+      // Finished or stopped
+      playingSequence = false;
+      playAllBtn.disabled = false;
+      shuffleBtn.disabled = false;
+      updateNowPlaying('');
+      disableControlsIfIdle();
+    }
+
+    // Controls wiring
+    playAllBtn.addEventListener('click', () => playSequence(false));
+    shuffleBtn.addEventListener('click', () => playSequence(true));
+    stopBtn.addEventListener('click', () => {
+      playingSequence = false;
+      stopAll();
+      updateNowPlaying('');
+      playAllBtn.disabled = false;
+      shuffleBtn.disabled = false;
+      stopBtn.disabled = true;
+      replayBtn.disabled = true;
+    });
+    replayBtn.addEventListener('click', () => {
+      if (!currentAudio || !currentCard) return;
+      // Restart the current one
+      getCharacters().forEach(({card}) => setSpeaking(card, false));
+      currentAudio.currentTime = 0;
+      setSpeaking(currentCard, true);
+      currentAudio.play().catch(()=>{});
+      updateNowPlaying(currentCard.dataset.name);
+      enableControlsDuringPlay();
+    });
+
+    // Keyboard shortcuts: Space = replay current, S = stop, P = play all, R = shuffle
+    window.addEventListener('keydown', (e) => {
+      if (e.target && ['INPUT', 'TEXTAREA', 'SELECT', 'BUTTON'].includes(e.target.tagName)) return;
+      if (e.code === 'Space') { e.preventDefault(); replayBtn.click(); }
+      if (e.key.toLowerCase() === 's') { stopBtn.click(); }
+      if (e.key.toLowerCase() === 'p') { playAllBtn.click(); }
+      if (e.key.toLowerCase() === 'r') { shuffleBtn.click(); }
+    });
+  </script>
+</body>
+</html>

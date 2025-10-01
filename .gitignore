@@ -1,0 +1,11 @@
+# OS & editor files
+.DS_Store
+Thumbs.db
+*.log
+*.tmp
+*.swp
+
+# Node/Build (if you add tooling later)
+node_modules/
+dist/
+build/
